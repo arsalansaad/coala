@@ -2,6 +2,7 @@ import argparse
 
 from coalib.misc import Constants
 from coalib.collecting.Collectors import get_all_bears_names
+from coalib.parsing.FilterHelper import get_all_filters_str
 
 
 class CustomFormatter(argparse.RawDescriptionHelpFormatter):
@@ -36,19 +37,22 @@ coala provides a common command-line interface for linting and fixing all your
 code, regardless of the programming languages you use.
 
 To find out what kind of analysis coala offers for the languages you use, visit
-<https://github.com/coala/bear-docs/blob/master/README.rst#supported-languages>
-or run:
+http://coala.io/languages, or run::
 
     $ coala --show-bears --filter-by-language C Python
 
 To perform code analysis, simply specify the analysis routines (bears) and the
 files you want it to run on, for example:
 
-    $ coala --bears SpaceConsistencyBear --files **.py
+    spaceBear::
+
+            $ coala --bears SpaceConsistencyBear --files **.py
 
 coala can also automatically fix your code:
 
-    $ coala --bears SpaceConsistencyBear --files **.py --apply-patches
+    spacePatchBear::
+
+            $ coala --bears SpaceConsistencyBear --files **.py --apply-patches
 
 To run coala without user interaction, run the `coala --non-interactive`,
 `coala --json` and `coala --format` commands.
@@ -96,7 +100,8 @@ To run coala without user interaction, run the `coala --non-interactive`,
         help='output results with a custom format string, e.g. '
              '"Message: {message}"; possible placeholders: '
              'id, origin, file, line, end_line, column, end_column, '
-             'severity, severity_str, message')
+             'severity, severity_str, message, message_base, '
+             'message_arguments, affected_code, source_lines')
 
     config_group = arg_parser.add_argument_group('Configuration')
 
@@ -125,6 +130,9 @@ To run coala without user interaction, run the `coala --non-interactive`,
     config_group.add_argument(
         '--flush-cache', const=True, action='store_const',
         help='rebuild the file cache')
+    config_group.add_argument(
+        '--no-autoapply-warn', const=True, action='store_const',
+        help='turn off warning about patches not being auto applicable')
 
     inputs_group = arg_parser.add_argument_group('Inputs')
 
@@ -159,7 +167,8 @@ To run coala without user interaction, run the `coala --non-interactive`,
     outputs_group.add_argument(
         '-L', '--log-level', nargs=1,
         choices=['ERROR', 'INFO', 'WARNING', 'DEBUG'], metavar='ENUM',
-        help='set log output level to ERROR/INFO/WARNING/DEBUG')
+        help='set log output level to DEBUG/INFO/WARNING/ERROR, '
+             'defaults to INFO')
 
     outputs_group.add_argument(
         '-m', '--min-severity', nargs=1,
@@ -179,6 +188,12 @@ To run coala without user interaction, run the `coala --non-interactive`,
         help='filters `--show-bears` by the given languages')
 
     outputs_group.add_argument(
+        '--filter-by', action='append', nargs='+',
+        metavar=('FILTER_NAME FILTER_ARG', 'FILTER_ARG'),
+        help='filters `--show-bears` by the filter given as argument. '
+             'Available filters: {}'.format(get_all_filters_str()))
+
+    outputs_group.add_argument(
         '-p', '--show-capabilities', nargs='+', metavar='LANG',
         help='show what coala can fix and detect for the given languages')
 
@@ -191,8 +206,13 @@ To run coala without user interaction, run the `coala --non-interactive`,
         help='show bear details for `--show-bears`')
 
     outputs_group.add_argument(
+        '--log-json', const=True, action='store_const',
+        help='output logs as json along with results'
+             ' (must be called with --json)')
+
+    outputs_group.add_argument(
         '-o', '--output', nargs=1, metavar='FILE',
-        help='write JSON logs to the given file (must be called with --json)')
+        help='write results to the given file (must be called with --json)')
 
     outputs_group.add_argument(
         '-r', '--relpath', nargs='?', const=True,
@@ -217,11 +237,23 @@ To run coala without user interaction, run the `coala --non-interactive`,
         '-n', '--no-orig', const=True, action='store_const',
         help="don't create .orig backup files before patching")
 
-    try:  # pragma: no cover
+    misc_group.add_argument(
+        '-A', '--single-action', const=True, action='store_const',
+        help='apply a single action for all results')
+
+    misc_group.add_argument(
+        '--debug', const=True, action='store_const',
+        help='run coala in debug mode, starting ipdb, '
+             'which must be separately installed, '
+             'on unexpected internal exceptions '
+             '(implies --verbose)')
+
+    try:
         # Auto completion should be optional, because of somewhat complicated
         # setup.
         import argcomplete
         argcomplete.autocomplete(arg_parser)
-    except ImportError:
+    except ImportError:  # pragma: no cover
         pass
+
     return arg_parser

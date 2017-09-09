@@ -3,20 +3,33 @@ import re
 import unittest
 from collections import OrderedDict
 
+from coalib.bearlib.languages import Language
 from coalib.settings.Setting import (
     Setting, path, path_list, url, typed_dict, typed_list, typed_ordered_dict,
-    glob, glob_list)
+    glob, glob_list,
+    language,
+)
 from coalib.parsing.Globbing import glob_escape
 
 
 class SettingTest(unittest.TestCase):
 
-    def test_construction(self):
-        self.assertRaises(ValueError, Setting, '', 2, 2)
+    def test_constructor_signature(self):
+        self.assertRaises(TypeError, Setting, '', 2, 2)
         self.assertRaises(TypeError, Setting, '', '', '', from_cli=5)
+        self.assertRaisesRegex(TypeError, 'to_append',
+                               Setting, '', '', '', to_append=10)
+        self.assertRaises(TypeError, Setting, 'a', 'b', list_delimiters=5)
+        self.assertRaises(TypeError, Setting, 'a', 'b', list_delimiters=None)
+
+    def test_empty_key(self):
+        with self.assertRaisesRegex(
+                ValueError, 'An empty key is not allowed for a setting'):
+            Setting('', 2)
 
     def test_path(self):
-        self.uut = Setting('key', ' 22\n', '.' + os.path.sep, True)
+        self.uut = Setting(
+            'key', ' 22\n', '.' + os.path.sep, strip_whitespaces=True)
         self.assertEqual(path(self.uut),
                          os.path.abspath(os.path.join('.', '22')))
 
@@ -62,6 +75,20 @@ class SettingTest(unittest.TestCase):
             [glob_escape(os.path.abspath(os.path.join('test (1)', '.'))),
              abspath])
 
+    def test_language(self):
+        self.uut = Setting('key', 'python 3.4')
+        result = language(self.uut)
+        self.assertIsInstance(result, Language)
+        self.assertEqual(str(result), 'Python 3.4')
+
+    def test_language_invalid(self):
+        self.uut = Setting('key', 'not a language')
+        with self.assertRaisesRegexp(
+                ValueError,
+                'Language `not a language` is not a valid language name or '
+                'not recognized by coala.'):
+            language(self.uut)
+
     def test_typed_list(self):
         self.uut = Setting('key', '1, 2, 3')
         self.assertEqual(typed_list(int)(self.uut),
@@ -70,6 +97,8 @@ class SettingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.uut = Setting('key', '1, a, 3')
             typed_list(int)(self.uut)
+
+        self.assertEqual(repr(typed_list(int)), 'typed_list(int)')
 
     def test_typed_dict(self):
         self.uut = Setting('key', '1, 2: t, 3')
@@ -80,6 +109,9 @@ class SettingTest(unittest.TestCase):
             self.uut = Setting('key', '1, a, 3')
             typed_dict(int, str, '')(self.uut)
 
+        self.assertEqual(repr(typed_dict(int, str, None)),
+                         'typed_dict(int, str, default=None)')
+
     def test_typed_ordered_dict(self):
         self.uut = Setting('key', '1, 2: t, 3')
         self.assertEqual(typed_ordered_dict(int, str, None)(self.uut),
@@ -89,8 +121,21 @@ class SettingTest(unittest.TestCase):
             self.uut = Setting('key', '1, a, 3')
             typed_ordered_dict(int, str, '')(self.uut)
 
+        self.assertEqual(repr(typed_ordered_dict(int, str, None)),
+                         'typed_ordered_dict(int, str, default=None)')
+
     def test_inherited_conversions(self):
-        self.uut = Setting('key', ' 22\n', '.', True)
+        self.uut = Setting('key', ' 22\n', '.', strip_whitespaces=True)
         self.assertEqual(str(self.uut), '22')
         self.assertEqual(int(self.uut), 22)
         self.assertRaises(ValueError, bool, self.uut)
+
+    def test_value_getter(self):
+        with self.assertRaisesRegex(ValueError, 'This property is invalid'):
+            self.uut = Setting('key', '22\n', '.', to_append=True)
+            self.uut.value
+
+        with self.assertRaisesRegex(ValueError,
+                                    'Iteration on this object is invalid'):
+            self.uut = Setting('key', '1, 2, 3', '.', to_append=True)
+            list(self.uut)

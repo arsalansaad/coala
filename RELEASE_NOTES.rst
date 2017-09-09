@@ -1,3 +1,153 @@
+coala 0.10 - PolarBear
+======================
+
+::
+
+
+                       `++-    -o+`
+                -oo:  :yhho    ohhy:  :oo.
+                :hhhoohhh+      +hhhoohhy:
+            ``.--shhhhhy:        /yhhhhho--..`
+           +hhhhhhhhhhh+          ohhhhhhhhhhh/
+           `/+/////+hhhh/        +hhhy+///////`
+                    -yhhhs     hshhhy-
+       .os/           hhhhy-  -yhhhh           +ss.
+       .yhho           shhho``ohhhs          `ohhy`
+        -yhhs`          +hhhsshhh+          `shhy-
+      .::shhhs++/+yhy////shhhhhhs////yhy++++yhhho::-
+     /hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh/
+      -::shhhs++++yhy////shhhhhhs          +shhhs::.
+        -yhhs`          +hhhsshhh+          `shhy-
+       .yhho`          shhho``ohhhs           ohhy.
+       .ss+           hhhhy   -yhhhh           /so.
+                    -yhhhs      shhhy-
+           `///////+yhhh+        /hhhh+/////+/`
+           /hhhhhhhhhhho          +hhhhhhhhhhh+
+            `..--ohhhhhy/        :yhhhhhs--.``
+                :hhhoohhh+      +hhhoohhh:
+                -oo:  :yhho    ohhy:  :oo-
+                       `+o-    -++`
+
+For this release we had 168 commits contributed by 66 unique contributors
+over 2.5 months.
+
+The name of this release is PolarBear to reflect changes we have made to our
+release process. We have implemented a release freeze before all releases
+to serve as a testing period for all staged changes. This should also help
+us keep releases on schedule.
+
+This release is an enhancement release which brings the usual slew of
+improvements to documentation and API. We have started preparing the codebase
+for the big changes that are outlined in the cEPs like section inheritance
+and the next generation core.
+
+**Known Bugs**
+
+- Results are cached even if a bear does not run. This can lead to empty
+  results where there should be errors. To temporarily deal with this
+  run coala with the ``--flush-cache`` option
+
+**General**
+
+- Test cases have been improved across the board so they catch more errors
+  before production.
+- Log output via json has been added which is accessible by using the
+  ``--log-json`` option.
+- coala domain has been changed from ``coala-analyzer.org`` to ``coala.io``.
+  Please file a bug if you find any broken links or instances of the old url.
+
+**Usability**
+
+- emacs has been added to list of editors that coala supports.
+- coala will now output a warning if you specify an editor that is not known.
+- The ``noqa`` keyword used by other linters as an ignore keyword is now
+  supported as a coala ignore keyword.
+- ``libclang-py3`` update to 3.4 is known to cause problems for some users. Please
+  uninstall and reinstall it if coala tells you there is a version mismatch
+  in ``libclang-py3``.
+- ``C#`` now has proper language support and should work with AnnotationBear
+  and all other bears which require language configuration.
+
+**Deprecations**
+
+- ``change_line`` method in ``Diff.py`` has been deprecated and has been
+  scheduled for removal.
+- ``format_str`` setting has been completely removed after being deprecated
+  last release. Use ``format`` instead to specify a formatting string.
+
+**Developers**
+
+- Travis has been enabled for developers to test their changes on their own CI.
+
+- Bears will now check for prerequisites using specified requirements
+  before running. Either override ``check_prequisites`` in the bear or write
+  a new requirement class if you wish to have a custom check.
+- When a language is not known by coala, an ``Unknown`` language will be
+  used.
+- ``@linter`` decorator now warns when using unsupported or anonymous capture
+  groups.
+- New ``dependency_management`` package has been created to contain package
+  manager and dependency classes used by coala. All of the old ``*Requirement``
+  classes have been moved here. Some new dependencies classes are
+  ``CabalRequirement`` and ``MavenRequirement``. Developers should add
+  requirement classes there now for the requirement types they wish to support.
+- ``DistributionRequirement`` can now check if a package is installed in many
+  popular linux distros.
+- Diffs are able to add a single line using the ``add_line`` method now.
+- ``Language`` class ignores leading and trailing spaces in language lookups.
+- ``Language`` class should auto-complete when using languages that have
+  been defined.
+
+**Docs**
+
+- A Code of Conduct has been added. This will guide conflict resolution if the
+  need ever arises.
+- API docs are now part of the coala repository.
+- Developer contribution documentation has received a major update
+
+**Bugfixes**
+
+- Fixed an issue where using linter bears on windows had thrown an exception.
+  `Issue 3323 <https://github.com/coala/coala/issues/3323>`_
+- coala ``-c`` (config file) option properly supports specifying directories.
+  Previously it has thrown an exception.
+  `Issue 3221 <https://github.com/coala/coala/issues/3221>`_
+- Documentation status github badge has been fixed.
+- Console interaction uses a unicode dot to represent spaces instead of the
+  bullet for better cross platform rendering.
+  `Issue 2751 <https://github.com/coala/coala/issues/2753>`_
+- ``Language`` class raises proper exception to fix ``hasattr`` behavior.
+  `Issue 3160 <https://github.com/coala/coala/issues/3160>`_
+- Ignore statements in multi-line comments should be supported properly now.
+  `Issue 3441 <https://github.com/coala/coala/issues/3441>`_
+
+coala 0.9.1
+===========
+
+This bugfix release addressed the following issues:
+
+- The installer has been fixed to only install on supported python versions.
+  `Issue #3310 <https://github.com/coala/coala/issues/3310>`_
+  `Issue #3383 <https://github.com/coala/coala/issues/3383>`_
+- The format_str option to specify a format string has ben restored to
+  coala run in format mode. This is deprecated and was only restored to
+  provide plug-in developers a grace period to switch to the replacement
+  setting ``format``.
+  `Issue #3303 <https://github.com/coala/coala/issues/3303>`_
+- Setuptools was removed from our requirements list because having it only
+  only caused dependency problems for other packages installed on the system
+  `coala Bears Issue #751 <https://github.com/coala/coala-bears/issues/751>`_
+- PyPrint dependency was updated to a version which does not pull in
+  setuptools anymore.
+- API change: An auto-apply disable option was added to run_coala to fix
+  issue detection by unattended services that use coala when the coafile
+  contains a default_action
+  `Issue #3212 <https://github.com/coala/coala/issues/3212>`_
+- A few specific language class behaviors were changed. This should only
+  affect developers
+  `Pull #3175 <https://github.com/coala/coala/pull/3175>`_
+  `Pull #3167 <https://github.com/coala/coala/pull/3167>`_
+
 coala 0.9.0 - GlobalBear
 ========================
 
@@ -135,26 +285,26 @@ coala 0.8.0 - grizzly
 
 ::
 
-                   -                         
-                 `Ns      :s-               
-            .     mMd`     :Nd.             
-           :h     /ss/`     +md.            
-           dN`    :NMMMy`  .ymmy. -+`       
-           dM+    dMMMMMm`.NMMMMN. +Mo      
-        `  -sddy: yMMMMMM/+MMMMMMo  dMo     
-       s/  +MMMMMy.dMMMMM-:MMMMMM+ -yhs`    
-      .Ms  /MMMMMMo /hdh:  oMMMMh`+MMMMm.   
-      -MN.  hMMMMMh  `/osssoos+-  dMMMMMs   
-       oyhho.+mMMm:+dMMMMMMMMMm+  sMMMMMs   
-       mMMMMMy``` dMMMMMMMMMMMMMh.`sMMMh`   
-       yMMMMMMy  `MMMMMMMMMMMMMMMMy:..`     
-       `yMMMMMd  yMMMMMMMMMMMMMMMMMMMMNh+`  
-         .ohhs-+mMMMMMMMMMMMMMMMMMMMMMMMMd  
-            .yMMMMMMMMMMMMMMMMMMMMMMMMMMMh  
-            mMMMMMMMMMMMMMMMMMMMMMMMMMMMh`  
-            yMMMMMMMMMMMMMMMNhssssyyyso-    
-             /dMMMMMMMMMNy+.                
-               ./syhys/-                    
+                   -
+                 `Ns      :s-
+            .     mMd`     :Nd.
+           :h     /ss/`     +md.
+           dN`    :NMMMy`  .ymmy. -+`
+           dM+    dMMMMMm`.NMMMMN. +Mo
+        `  -sddy: yMMMMMM/+MMMMMMo  dMo
+       s/  +MMMMMy.dMMMMM-:MMMMMM+ -yhs`
+      .Ms  /MMMMMMo /hdh:  oMMMMh`+MMMMm.
+      -MN.  hMMMMMh  `/osssoos+-  dMMMMMs
+       oyhho.+mMMm:+dMMMMMMMMMm+  sMMMMMs
+       mMMMMMy``` dMMMMMMMMMMMMMh.`sMMMh`
+       yMMMMMMy  `MMMMMMMMMMMMMMMMy:..`
+       `yMMMMMd  yMMMMMMMMMMMMMMMMMMMMNh+`
+         .ohhs-+mMMMMMMMMMMMMMMMMMMMMMMMMd
+            .yMMMMMMMMMMMMMMMMMMMMMMMMMMMh
+            mMMMMMMMMMMMMMMMMMMMMMMMMMMMh`
+            yMMMMMMMMMMMMMMMNhssssyyyso-
+             /dMMMMMMMMMNy+.
+               ./syhys/-
 
 
 For this release, we have had 46 developers from around the world contributing
@@ -194,7 +344,7 @@ Below are some of the important changes introduced for this release:
 
   + Native requirements (from package managers such as ``apt-get``, ``dnf``, ``pacman``, ...)
   + Conda requirements
-  + Python requirements through ``pip``
+  + Python requirements through ``pip3``
   + ``go`` requirements
   + Ruby requirements through ``gem``
   + NodeJS requirements through ``npm``
@@ -256,7 +406,7 @@ Below are some of the important changes introduced for this release:
 - A complete overhaul to the README page with a focus on design and
   readability.
 
-- A new `FAQ page <http://coala.readthedocs.io/en/latest/Users/FAQ.html>`_ has
+- A new `FAQ page <http://docs.coala.io/en/latest/Users/FAQ.html>`_ has
   been created.
 
 - Various other documentation pages have been improved with new resources,
@@ -311,7 +461,7 @@ listed are especially lots of internal improvements and documentation fixes.
 
 New Features:
 
-- `Shell Autocompletion <http://coala.readthedocs.io/en/latest/Users/Tutorials/Shell_Autocompletion.html>`_
+- `Shell Autocompletion <http://docs.coala.io/en/latest/Users/Tutorials/Shell_Autocompletion.html>`_
 - Patches are shown without prompting the user if small enough, otherwise
   diffstats.
 - Bears have metadata and can be browsed. Browse the
@@ -502,7 +652,7 @@ New features:
 -  Actions that are not applicable multiple times are not shown after applying
    them anymore. (https://github.com/coala-analyzer/coala/issues/1064)
 -  Documentation about how to add coala as a pre commit hook has been added:
-   http://coala.readthedocs.org/en/latest/Users/Git_Hooks.html
+   http://docs.coala.io/en/latest/Users/Git_Hooks.html
 -  Actions emit a success message now that is shown to the user and improves
    usability and intuitivity of actions.
 -  A warning is emitted if a bear or file glob does not match any bears or
@@ -578,7 +728,7 @@ For bear writers:
 Notable internal changes:
 
 -  API documentation is now available at
-   http://coala.readthedocs.org/en/latest/API/modules.html
+   http://api.coala.io
 -  coala switched to PyTest. Our old own framework is no longer maintained.
    (https://github.com/coala-analyzer/coala/issues/875)
 -  As always loads of refactorings to make the code more stable, readable and
@@ -715,7 +865,7 @@ This release features the following feature changes:
 -  Changed logging API in Bears (now: debug/warn/err).
 -  clang python bindings were added to the bearlib.
 -  Exitcodes were organized and documented.
-   (http://coala.readthedocs.org/en/latest/Users/Exit_Codes.html)
+   (http://docs.coala.io/en/latest/Users/Exit_Codes.html)
 -  Handling of EOF/Keyboard Interrupt was improved.
 -  Console output is now colored.
 -  Bears can now easily convert settings to typed lists or dicts.
@@ -736,7 +886,7 @@ This release features the following feature changes:
 -  The StringProcessing libary is there to help bear writers deal with
    regexes and similar things.
 -  A new glob syntax was introduced and documented.
-   (http://coala.readthedocs.org/en/latest/Users/Glob_Patterns.html)
+   (http://docs.coala.io/en/latest/Users/Glob_Patterns.html)
 -  The ``--apply-changes`` argument was removed as its concept does not
    fit anymore.
 -  Bears can now return any iterable. This makes it possible to
@@ -756,7 +906,7 @@ Infrastructural changes:
 -  AppVeyor (Windows CI) was added.
 -  Travis CI was added for Mac OS X.
 -  Development releases are automatically done from master and available
-   via ``pip install coala --pre``.
+   via ``pip3 install coala --pre``.
 -  Rultor is now used exclusively to push on master. Manual pushes to
    master are not longer allowed to avoid human errors. Rultor deploys
    translation strings to Zanata and the PyPI package before pushing the
@@ -815,7 +965,7 @@ https://github.com/coala-analyzer/coala/blob/v0.1.0-alpha/TUTORIAL.md
 
 If you want to write static code analysis routines, please check out
 this guide:
-https://github.com/coala-analyzer/coala/blob/v0.1.0-alpha/doc/getting\_involved/WRITING\_BEARS.md
+https://github.com/coala-analyzer/coala/blob/v0.1.0-alpha/doc/getting\_involved/WRITING\_NATIVE\_BEARS.md
 
 We love bugs - if you find some, be sure to share them with us:
 https://github.com/coala-analyzer/coala/issues
